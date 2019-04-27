@@ -37,13 +37,13 @@ map:
 sun:
 
 # Sensors
-sensor:
-  - platform: nut
-    resources:
-      - ups.load
-      - ups.realpower.nominal
-      - input.voltage
-      - battery.runtime
+# sensor:
+#   - platform: nut
+#     resources:
+#       - ups.load
+#       - ups.realpower.nominal
+#       - input.voltage
+#       - battery.runtime
 
 # Text to speech
 tts:
@@ -95,13 +95,13 @@ recorder:
       - sun.sun
       - sensor.alarm_panel_display
 
-media_player:
-  - platform: spotify
-    client_id: !secret spotify_client_id
-    client_secret: !secret spotify_client_secret
-    aliases:
-        abc123def456: 'Living Room'
-        9183abas000: 'Bed Room'
+# media_player:
+#   - platform: spotify
+#     client_id: !secret spotify_client_id
+#     client_secret: !secret spotify_client_secret
+#     aliases:
+#         abc123def456: 'Living Room'
+#         9183abas000: 'Bed Room'
 
 system_health:
 

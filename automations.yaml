@@ -1,3 +1,20 @@
+- alias: Activate movie scene
+  trigger:
+    platform: event
+    event_type: activate_movie_scene
+  action:
+    service: scene.turn_on
+    entity_id: scene.Movies
+
+- alias: Toggle kitchen light
+  trigger:
+    platform: event
+    event_type: toggle_kitchen_light
+  action:
+    service: light.toggle
+    entity_id:
+      - light.ge_unknown_type_4944_id_3039_level_2 # Kitchen
+
 - alias: Turn on lights at dusk
   trigger:
     platform: numeric_state

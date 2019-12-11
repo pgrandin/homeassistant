@@ -1,0 +1,58 @@
+device:
+  type: socket
+  host: ser2sock
+  port: 10000
+panel_display: true
+zones:
+  01:
+    name: 'Front Door'
+    type: 'opening'
+  02:
+    name: 'Garage Door'
+    type: 'opening'
+  03:
+    name: 'Sliding Door'
+    type: 'opening'
+  04:
+    name: 'Upstairs Motion'
+    type: 'opening'
+  10:
+    # "Zn ZT P RC IN:L 10 10 1 80 RF:1s"
+    name: 'Living room Motion'
+    type: 'opening'
+  11:
+    name: 'Playroom'
+    type: 'opening'
+  12:
+    name: 'Family room #1'
+    type: 'opening'
+  13:
+    name: 'Family room #2'
+    type: 'opening'
+  14:
+    name: 'Kitchen #1'
+    type: 'opening'
+  15:
+    name: 'Kitchen #2'
+    type: 'opening'
+  16:
+    name: 'Dining Room'
+    type: 'opening'
+  17:
+    name: 'Living Room #1'
+    type: 'opening'
+  18:
+    name: 'Living Room #2'
+    type: 'opening'
+  19:
+    name: 'Playroom motion'
+    type: 'opening'
+  21:
+    name: 'Utilities'
+    type: 'opening'
+  23:
+    name: 'Wine Cellar'
+    type: 'opening'
+  25:
+    name: 'Guest room'
+    type: 'opening'

@@ -1,0 +1,165 @@
+- alias: Activate movie scene
+  trigger:
+    platform: event
+    event_type: activate_movie_scene
+  action:
+    service: scene.turn_on
+    entity_id: scene.Movies
+
+- alias: Toggle kitchen light
+  trigger:
+    platform: event
+    event_type: toggle_kitchen_light
+  action:
+    service: light.toggle
+    entity_id:
+      - light.jasco_products_14299_in_wall_1000w_smart_dimmer_level_5 # Kitchen
+
+- alias: Toggle home theater light
+  trigger:
+    platform: event
+    event_type: toggle_home_theater_light
+  action:
+    service: light.toggle
+    entity_id:
+      - light.jasco_products_14299_in_wall_1000w_smart_dimmer_level_3 # Home Theater
+
+- alias: Turn on lights at dusk
+  trigger:
+    platform: numeric_state
+    entity_id: sun.sun
+    value_template: '{{ state.attributes.elevation }}'
+    below: -1
+  action:
+    service: light.turn_on
+    entity_id: 
+      - light.jasco_products_14299_in_wall_1000w_smart_dimmer_level_4   # Porch
+      - light.jasco_products_45606_2_way_dimmer_switch_level   # Nook
+      - light.jasco_products_14299_in_wall_1000w_smart_dimmer_level # Deco
+    data:
+      brightness: 255
+
+- alias: Turn off lights at 22:00
+  trigger:
+    platform: time
+    at: '22:00:00'
+  action:
+    service: light.turn_off
+    entity_id: 
+      - light.jasco_products_45606_2_way_dimmer_switch_level   # Nook
+      - light.jasco_products_14299_in_wall_1000w_smart_dimmer_level # Deco
+
+- alias: Turn off lights at 00:00
+  trigger:
+    platform: time
+    at: '00:00:00'
+  action:
+    service: light.turn_off
+    entity_id: 
+      - light.jasco_products_14299_in_wall_1000w_smart_dimmer_level_4   # Porch
+
+- alias: Alarm disarmed
+  trigger:
+    platform: state
+    entity_id: alarm_control_panel.alarm_panel
+    to: 'disarmed'
+  action:
+    - service: notify.pushover_notifier
+      data:
+        message: "Alarm disarmed"
+
+- alias: Alarm armed home
+  trigger:
+    platform: state
+    entity_id: alarm_control_panel.alarm_panel
+    to: 'armed_home'
+  action:
+    - service: notify.pushover_notifier
+      data:
+        message: "Alarm armed HOME"
+    - service: light.turn_off
+      entity_id: 
+        - light.jasco_products_14299_in_wall_1000w_smart_dimmer_level_4   # Porch
+        - light.jasco_products_45606_2_way_dimmer_switch_level   # Nook
+        - light.jasco_products_14299_in_wall_1000w_smart_dimmer_level # Deco
+
+- alias: Alarm armed AWAY
+  trigger:
+    platform: state
+    entity_id: alarm_control_panel.alarm_panel
+    to: 'armed_away'
+  action:
+    service: notify.pushover_notifier
+    data:
+      message: "Alarm armed AWAY"
+
+- alias: Alarm TRIGGERED
+  trigger:
+    platform: state
+    entity_id: alarm_control_panel.alarm_panel
+    to: 'triggered'
+  action:
+    - service: notify.pushover_notifier
+      data:
+        message: "Alarm TRIGGERED"
+    - service: light.turn_on
+      entity_id: 
+        - light.jasco_products_14299_in_wall_1000w_smart_dimmer_level_4   # Porch
+        - light.jasco_products_45606_2_way_dimmer_switch_level   # Nook
+        - light.jasco_products_14299_in_wall_1000w_smart_dimmer_level # Deco
+
+- alias: Turn on downstairs on motion
+  trigger:
+    platform: state
+    entity_id: binary_sensor.living_room_motion
+    to: 'on'
+  condition:
+    condition: or
+    conditions:
+      - condition: state
+        entity_id: light.jasco_products_14299_in_wall_1000w_smart_dimmer_level
+        state: 'off'
+      - condition: sun
+        after: sunset
+  action:
+    - service: light.turn_on
+      entity_id: 
+        - light.jasco_products_45606_2_way_dimmer_switch_level   # Nook
+        - light.jasco_products_14299_in_wall_1000w_smart_dimmer_level # Deco
+      data:
+        brightness: 127
+    - service: light.turn_on
+      data:
+        entity_id: light.esp
+        rgb_color: [255, 0, 0]
+        brightness: 200
+        transition: 2
+    - service: timer.start
+      data:
+        entity_id: timer.downstairs_lights
+
+- alias: Turn off downstairs on timer
+  trigger:
+    platform: event
+    event_type: timer.finished
+    event_data:
+      entity_id: timer.downstairs_lights
+  action:
+    service: light.turn_off
+    data:
+      entity_id:
+        - light.jasco_products_45606_2_way_dimmer_switch_level   # Nook
+        - light.jasco_products_14299_in_wall_1000w_smart_dimmer_level # Deco
+
+- alias: "RGB traka Animation Speed"
+  initial_state: True
+  hide_entity: False
+  trigger:
+    - platform: state
+      entity_id: input_number.animation_speed
+  action:
+    - service: mqtt.publish
+      data_template:
+        topic: "leds/onairtest/set"
+        payload: '{"transition":{{ trigger.to_state.state | int }}}'
+

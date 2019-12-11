@@ -1,0 +1,30 @@
+version: '3'
+services:
+  homeassistant:
+    container_name: home-assistant
+    image: homeassistant/home-assistant:0.102.2
+    volumes:
+      - /home/pi/hass/config:/config
+    environment:
+      - TZ=America/Denver
+    devices:
+      - /dev/ttyACM0:/dev/ttyACM0
+    restart: always
+    ports:
+      - 8123:8123
+    links:
+      - ser2sock:ser2sock
+  ser2sock:
+    image: tenstartups/ser2sock:armhf
+    ports:
+      - 10000:10000
+    devices:
+      - /dev/ttyUSB0
+    environment:
+      - SERIAL_DEVICE=/dev/ttyUSB0
+      - BAUD_RATE=115200
+    privileged: true
+  mqtt:
+    image: eclipse-mosquitto:1.6.7
+    ports:
+      - 1883:1883

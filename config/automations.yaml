@@ -1,30 +1,53 @@
-- alias: Activate movie scene
+- id: living_room_movie_scene
+  alias: Activate movie scene
   trigger:
+  - event_type: activate_movie_scene
     platform: event
-    event_type: activate_movie_scene
+  - device_id: 8d93c945b9264efdaccc87b3e70061d4
+    domain: zha
+    platform: device
+    subtype: remote_button_short_press
+    type: remote_button_short_press
+  - device_id: fbdf379dd75f45cabccb93b61b5f2c77
+    domain: zha
+    platform: device
+    subtype: remote_button_double_press
+    type: remote_button_double_press
   action:
+  - entity_id: scene.Movies
     service: scene.turn_on
-    entity_id: scene.Movies
 
-- alias: Toggle kitchen light
+- id: toggle_kitchen_light
+  alias: Toggle kitchen light
   trigger:
     platform: event
     event_type: toggle_kitchen_light
   action:
     service: light.toggle
     entity_id:
-      - light.jasco_products_14299_in_wall_1000w_smart_dimmer_level_5 # Kitchen
+    - light.jasco_products_14299_in_wall_1000w_smart_dimmer_level_5
 
-- alias: Toggle home theater light
+- id: home_theater_lights_off
+  alias: Home theater light turn OFF
   trigger:
-    platform: event
-    event_type: toggle_home_theater_light
+  - device_id: 7d53030f10654b99b37b7ebb1ec2e8f0
+    domain: zha
+    platform: device
+    subtype: remote_button_short_press
+    type: remote_button_short_press
+  condition:
+  - condition: device
+    device_id: 064b2228cf41464db56c2bcbec741f02
+    domain: light
+    entity_id: light.jasco_products_14299_in_wall_1000w_smart_dimmer_level_3
+    type: is_on
   action:
-    service: light.toggle
-    entity_id:
-      - light.jasco_products_14299_in_wall_1000w_smart_dimmer_level_3 # Home Theater
+  - entity_id:
+    - light.jasco_products_14299_in_wall_1000w_smart_dimmer_level_3
+    service: light.turn_off
 
-- alias: Turn on lights at dusk
+- id: turn_lights_on_at_dusk
+  alias: Turn on lights at dusk
   trigger:
     platform: numeric_state
     entity_id: sun.sun
@@ -32,113 +55,131 @@
     below: -1
   action:
     service: light.turn_on
-    entity_id: 
-      - light.jasco_products_14299_in_wall_1000w_smart_dimmer_level_4   # Porch
-      - light.jasco_products_45606_2_way_dimmer_switch_level   # Nook
-      - light.jasco_products_14299_in_wall_1000w_smart_dimmer_level # Deco
+    entity_id:
+    - light.jasco_products_14299_in_wall_1000w_smart_dimmer_level_4
+    - light.jasco_products_45606_2_way_dimmer_switch_level
+    - light.jasco_products_14299_in_wall_1000w_smart_dimmer_level
     data:
       brightness: 255
 
-- alias: Turn off lights at 22:00
+- id: turn_lights_off_at_2200
+  alias: Turn off lights at 22:00
   trigger:
     platform: time
     at: '22:00:00'
   action:
     service: light.turn_off
-    entity_id: 
-      - light.jasco_products_45606_2_way_dimmer_switch_level   # Nook
-      - light.jasco_products_14299_in_wall_1000w_smart_dimmer_level # Deco
+    entity_id:
+    - light.jasco_products_45606_2_way_dimmer_switch_level
+    - light.jasco_products_14299_in_wall_1000w_smart_dimmer_level
 
-- alias: Turn off lights at 00:00
+- id: lock_door_at_2200
+  alias: Lock door at 22:00
   trigger:
     platform: time
-    at: '00:00:00'
+    at: '22:00:00'
   action:
+    service: lock.lock
+    entity_id:
+    - lock.schlage_allegion_be469zp_connect_smart_deadbolt_locked
+  id: fd19224c7d4b4b66999c90d558ad7339
+
+- id: turn_off_porch_lights_at_0000
+  alias: Turn off porch lights at 00:00
+  trigger:
+  - at: 00:00:00
+    platform: time
+  action:
+  - entity_id:
+    - light.jasco_products_14299_in_wall_1000w_smart_dimmer_level_4
     service: light.turn_off
-    entity_id: 
-      - light.jasco_products_14299_in_wall_1000w_smart_dimmer_level_4   # Porch
 
-- alias: Alarm disarmed
+- id: notification_alarm_disarmed
+  alias: Alarm disarmed
   trigger:
     platform: state
     entity_id: alarm_control_panel.alarm_panel
-    to: 'disarmed'
+    to: disarmed
   action:
-    - service: notify.pushover_notifier
-      data:
-        message: "Alarm disarmed"
+  - service: notify.pushover_notifier
+    data:
+      message: Alarm disarmed
 
-- alias: Alarm armed home
+- id: notification_alarm_armed_home
+  alias: Alarm armed home
   trigger:
     platform: state
     entity_id: alarm_control_panel.alarm_panel
-    to: 'armed_home'
+    to: armed_home
   action:
-    - service: notify.pushover_notifier
-      data:
-        message: "Alarm armed HOME"
-    - service: light.turn_off
-      entity_id: 
-        - light.jasco_products_14299_in_wall_1000w_smart_dimmer_level_4   # Porch
-        - light.jasco_products_45606_2_way_dimmer_switch_level   # Nook
-        - light.jasco_products_14299_in_wall_1000w_smart_dimmer_level # Deco
+  - service: notify.pushover_notifier
+    data:
+      message: Alarm armed HOME
 
-- alias: Alarm armed AWAY
+- id: notification_alarm_armed_away
+  alias: Alarm armed AWAY
   trigger:
     platform: state
     entity_id: alarm_control_panel.alarm_panel
-    to: 'armed_away'
+    to: armed_away
   action:
     service: notify.pushover_notifier
     data:
-      message: "Alarm armed AWAY"
+      message: Alarm armed AWAY
 
-- alias: Alarm TRIGGERED
+- id: notification_alarm_triggered
+  alias: Alarm TRIGGERED
   trigger:
     platform: state
     entity_id: alarm_control_panel.alarm_panel
-    to: 'triggered'
+    to: triggered
   action:
-    - service: notify.pushover_notifier
-      data:
-        message: "Alarm TRIGGERED"
-    - service: light.turn_on
-      entity_id: 
-        - light.jasco_products_14299_in_wall_1000w_smart_dimmer_level_4   # Porch
-        - light.jasco_products_45606_2_way_dimmer_switch_level   # Nook
-        - light.jasco_products_14299_in_wall_1000w_smart_dimmer_level # Deco
+  - service: notify.pushover_notifier
+    data:
+      message: Alarm TRIGGERED
+  - service: light.turn_on
+    entity_id:
+    - light.jasco_products_14299_in_wall_1000w_smart_dimmer_level_4
+    - light.jasco_products_45606_2_way_dimmer_switch_level
+    - light.jasco_products_14299_in_wall_1000w_smart_dimmer_level
 
-- alias: Turn on downstairs on motion
+- id: turn_on_downstairs_on_motion
+  alias: Turn on downstairs on motion
   trigger:
     platform: state
     entity_id: binary_sensor.living_room_motion
     to: 'on'
   condition:
-    condition: or
+    condition: and
     conditions:
-      - condition: state
-        entity_id: light.jasco_products_14299_in_wall_1000w_smart_dimmer_level
-        state: 'off'
-      - condition: sun
-        after: sunset
+    - condition: state
+      entity_id: light.jasco_products_14299_in_wall_1000w_smart_dimmer_level
+      state: 'off'
+    - condition: sun
+      after: sunset
   action:
-    - service: light.turn_on
-      entity_id: 
-        - light.jasco_products_45606_2_way_dimmer_switch_level   # Nook
-        - light.jasco_products_14299_in_wall_1000w_smart_dimmer_level # Deco
-      data:
-        brightness: 127
-    - service: light.turn_on
-      data:
-        entity_id: light.esp
-        rgb_color: [255, 0, 0]
-        brightness: 200
-        transition: 2
-    - service: timer.start
-      data:
-        entity_id: timer.downstairs_lights
+  - service: light.turn_on
+    entity_id:
+    - light.jasco_products_45606_2_way_dimmer_switch_level
+    - light.jasco_products_14299_in_wall_1000w_smart_dimmer_level
+    data:
+      brightness: 127
+  - service: light.turn_on
+    data:
+      entity_id: light.wled_light
+      rgb_color:
+      - 255
+      - 0
+      - 0
+      brightness: 200
+      transition: 2
+      effect: Solid
+  - service: timer.start
+    data:
+      entity_id: timer.downstairs_lights
 
-- alias: Turn off downstairs on timer
+- id: turn_off_downstairs_on_timer
+  alias: Turn off downstairs on timer
   trigger:
     platform: event
     event_type: timer.finished
@@ -148,18 +189,187 @@
     service: light.turn_off
     data:
       entity_id:
-        - light.jasco_products_45606_2_way_dimmer_switch_level   # Nook
-        - light.jasco_products_14299_in_wall_1000w_smart_dimmer_level # Deco
+      - light.jasco_products_45606_2_way_dimmer_switch_level
+      - light.jasco_products_14299_in_wall_1000w_smart_dimmer_level
+      - light.wled_light
 
-- alias: "RGB traka Animation Speed"
-  initial_state: True
-  hide_entity: False
+- id: dim_zoeys_light_on_timer
+  alias: Zoey's button timer finished
   trigger:
-    - platform: state
-      entity_id: input_number.animation_speed
+  - event_data:
+      entity_id: timer.zoeys_button
+    event_type: timer.finished
+    platform: event
   action:
-    - service: mqtt.publish
-      data_template:
-        topic: "leds/onairtest/set"
-        payload: '{"transition":{{ trigger.to_state.state | int }}}'
+  - data:
+      brightness: 32
+      entity_id:
+      - light.linear_nortek_security_control_llc_unknown_type_4754_id_4252_level
+    service: light.turn_on
 
+- id: bedtime
+  alias: Action Turn Lights Off
+  trigger:
+  - event_data:
+      actionName: Bed Time
+    event_type: ios.action_fired
+    platform: event
+  - device_id: 1510fd60e9824f50aad4b0cbc15fc2f3
+    domain: zha
+    platform: device
+    subtype: remote_button_long_press
+    type: remote_button_long_press
+  action:
+  - entity_id:
+    - light.jasco_products_45606_2_way_dimmer_switch_level
+    - light.linear_nortek_security_control_llc_unknown_type_4754_id_4252_level_2
+    - light.jasco_products_14299_in_wall_1000w_smart_dimmer_level
+    - light.jasco_products_14299_in_wall_1000w_smart_dimmer_level_3
+    - light.jasco_products_14299_in_wall_1000w_smart_dimmer_level_5
+    - light.jasco_products_14299_in_wall_1000w_smart_dimmer_level_6
+    - light.wled_light
+    - light.zooz_zen27_s2_dimmer_wall_switch_level
+    service: light.turn_off
+  initial_state: true
+
+- alias: Turn door light on when getting home
+  trigger:
+    platform: state
+    entity_id: device_tracker.iphone
+    to: home
+  action:
+  - service: light.turn_on
+    data:
+      entity_id: light.jasco_products_14299_in_wall_1000w_smart_dimmer_level_4
+  id: 025c762f36cb4ea398b1b33a55e397d1
+
+- id: notification_front_door_unlocked
+  alias: Front door unlocked
+  trigger:
+    platform: state
+    entity_id: lock.schlage_allegion_be469zp_connect_smart_deadbolt_locked
+    to: unlocked
+  action:
+  - service: notify.pushover_notifier
+    data:
+      message: Front door unlocked
+
+- id: notification_front_door_locked
+  alias: Front door locked
+  trigger:
+    platform: state
+    entity_id: lock.schlage_allegion_be469zp_connect_smart_deadbolt_locked
+    to: locked
+  action:
+  - service: notify.pushover_notifier
+    data:
+      message: Front door locked
+
+- id: toggle_master_bedroom_light
+  alias: Toggle master bedroom light
+  trigger:
+  - device_id: 1510fd60e9824f50aad4b0cbc15fc2f3
+    domain: zha
+    platform: device
+    subtype: remote_button_short_press
+    type: remote_button_short_press
+  condition: []
+  action:
+  - entity_id:
+    - light.jasco_products_14299_in_wall_1000w_smart_dimmer_level_6
+    service: light.toggle
+
+- id: kitchen_leds_mimic_on
+  alias: Kitchen LEDS mimic on
+  initial_state: 'on'
+  action:
+    entity_id: light.wled_light
+    service: light.turn_on
+    data_template:
+      brightness: '{{ states.light.jasco_products_14299_in_wall_1000w_smart_dimmer_level_5.attributes.brightness
+        }}'
+  trigger:
+  - entity_id: light.jasco_products_14299_in_wall_1000w_smart_dimmer_level_5
+    platform: state
+
+- id: kitchen_leds_mimic_off
+  action:
+  - entity_id: light.wled_light
+    service: light.turn_off
+  alias: Kitchen LEDS mimic off
+  trigger:
+  - entity_id: light.jasco_products_14299_in_wall_1000w_smart_dimmer_level_5
+    platform: state
+    to: 'off'
+
+- id: alarm_quick_arm
+  alias: Quick alarm arm
+  trigger:
+  - device_id: 1510fd60e9824f50aad4b0cbc15fc2f3
+    domain: zha
+    platform: device
+    subtype: remote_button_double_press
+    type: remote_button_double_press
+  condition: []
+  action:
+  - data:
+      code: !secret alarm_code
+    entity_id: alarm_control_panel.alarm_panel
+    service: alarm_control_panel.alarm_arm_home
+
+- id: zoeys_button_single_click
+  alias: Zoey's button single click
+  description: ''
+  trigger:
+  - device_id: fbdf379dd75f45cabccb93b61b5f2c77
+    domain: zha
+    platform: device
+    subtype: remote_button_short_press
+    type: remote_button_short_press
+  condition: []
+  action:
+  - data: {}
+    entity_id: timer.zoeys_button
+    service: timer.start
+  - brightness_pct: 100
+    device_id: 0bf9528e72984707aa03b5c6c4bb81d0
+    domain: light
+    entity_id: light.linear_nortek_security_control_llc_unknown_type_4754_id_4252_level
+    type: turn_on
+
+- id: home_theater_full_brightness
+  alias: Home theater full brightness
+  trigger:
+  - device_id: 7d53030f10654b99b37b7ebb1ec2e8f0
+    domain: zha
+    platform: device
+    subtype: remote_button_double_press
+    type: remote_button_double_press
+  condition: []
+  action:
+  - brightness_pct: 100
+    device_id: 064b2228cf41464db56c2bcbec741f02
+    domain: light
+    entity_id: light.jasco_products_14299_in_wall_1000w_smart_dimmer_level_3
+    type: turn_on
+
+- id: home_theater_lights_on
+  alias: Home theater light turn ON
+  trigger:
+  - device_id: 7d53030f10654b99b37b7ebb1ec2e8f0
+    domain: zha
+    platform: device
+    subtype: remote_button_short_press
+    type: remote_button_short_press
+  condition:
+  - condition: device
+    device_id: 064b2228cf41464db56c2bcbec741f02
+    domain: light
+    entity_id: light.jasco_products_14299_in_wall_1000w_smart_dimmer_level_3
+    type: is_off
+  action:
+  - brightness_pct: 20
+    device_id: 064b2228cf41464db56c2bcbec741f02
+    domain: light
+    entity_id: light.jasco_products_14299_in_wall_1000w_smart_dimmer_level_3
+    type: turn_on

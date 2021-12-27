@@ -1,2 +1,1 @@
 config/duckdns.yaml
-secrets.yaml

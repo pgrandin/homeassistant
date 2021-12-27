@@ -3,4 +3,3 @@ config/secrets.yaml
 /.blackbox/pubring.kbx~
 /.blackbox/secring.gpg
 /config/duckdns.yaml
-/secrets.yaml

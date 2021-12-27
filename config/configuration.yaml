@@ -1,0 +1,172 @@
+
+# Configure a default setup of Home Assistant (frontend, api, etc)
+default_config:
+
+
+lovelace:
+  mode: yaml
+
+homeassistant:
+  # Name of the location where Home Assistant is running
+  name: Home
+  # Location required to calculate the time the sun rises and sets
+  latitude: !secret latitude
+  longitude: !secret longitude
+  # Impacts weather/sunrise data (altitude above sea level in meters)
+  elevation: 1821
+  unit_system: metric
+  time_zone: America/Denver
+
+# Text to speech
+tts:
+  - platform: google_translate
+
+http: !include http.yaml
+group: !include groups.yaml
+automation: !include automations.yaml
+script: !include scripts.yaml
+scene: !include scenes.yaml
+
+ecobee:
+  api_key: !secret ecobee_api_key
+
+duckdns: !include duckdns.yaml
+
+alarmdecoder: !include alarm.yaml
+
+zwave:
+  usb_path: /dev/zwave
+  device_config:
+    light.jasco_products_14299_in_wall_1000w_smart_dimmer_level_4:
+      polling_intensity: 1
+      refresh_value: 2
+      delay: 3
+    light.jasco_products_14299_in_wall_1000w_smart_dimmer_level_5: # Kitchen
+      polling_intensity: 1
+      refresh_value: 2
+      delay: 3
+    light.jasco_products_14299_in_wall_1000w_smart_dimmer_level_6:
+      polling_intensity: 1
+      refresh_value: 2
+      delay: 3
+
+zha:
+  database_path: /config/zigbee.db
+
+timer:
+  downstairs_lights:
+    duration: '00:05:00'
+  garage_lights:
+    duration: '00:05:00'
+  zoeys_button:
+    duration: '00:20:00'
+
+recorder:
+  purge_keep_days: 1
+  exclude:
+    domains:
+      - alarm_control_panel
+      - zwave.zooz_zen15_power_switch
+      - sensor.zooz_zen15_power_switch_voltage
+      - sensor.zooz_zen15_power_switch_previous_reading
+      - sensor.zooz_zen15_power_switch_power
+      - switch.zooz_zen15_power_switch_switch
+      - zwave.jasco_products_14299_in_wall_1000w_smart_dimmer_6
+      - sensor.zooz_zen15_power_switch_energy
+    entities:
+      - sun.sun
+      - sensor.alarm_panel_display
+
+# influxdb:
+#   host: !secret influxdb-host
+#   port: 8086
+#   database: homeassistant
+#   max_retries: 3
+#   default_measurement: state
+#   tags:
+#     instance: prod
+#     source: hass
+
+notify:
+  - name: pushover_notifier
+    platform: pushover
+    api_key: !secret pushover_api_key
+    user_key: !secret pushover_user_key
+
+# camera:
+#   # Salon, IR
+#   - platform: mjpeg
+#     mjpeg_url: http://192.168.1.164:8081/mjpeg
+#   # Bureau
+#   - platform: mjpeg
+#     mjpeg_url: http://192.168.1.158:8081/mjpeg
+#   # Cuisine, IR
+#   - platform: mjpeg
+#     mjpeg_url: http://192.168.1.238:8081/mjpeg
+
+# sensors:
+#   - platform: template
+#     sensors:
+#       front_door:
+#         value_template: >-
+#           {% if states.binary_sensor.binary_sensor.kaipule_technology_co_ltd_im20_door_window_sensor_sensor.state == 'off' %}
+#             Open
+#           {% elif states.binary_sensor.binary_sensor.kaipule_technology_co_ltd_im20_door_window_sensor_sensor.state == 'on' %}
+#             Closed
+#           {% else %}
+#             n/a
+#           {% endif %}
+
+
+cover:
+  - platform: template
+    covers:
+      single_garage_door:
+        device_class: garage
+        friendly_name: "Single Garage Door"
+        value_template: >-
+          {% if is_state('binary_sensor.kaipule_technology_co_ltd_im20_door_window_sensor_sensor_2', 'on') %}
+            open
+          {% else %}
+            closed
+          {% endif %}
+        open_cover:
+          - service: script.single_garage_door
+        close_cover:
+          - condition: state
+            entity_id: binary_sensor.kaipule_technology_co_ltd_im20_door_window_sensor_sensor_2
+            state: 'on'
+          - service: script.single_garage_door
+        stop_cover:
+          service: script.single_garage_door
+        icon_template: >-
+          {% if is_state('binary_sensor.kaipule_technology_co_ltd_im20_door_window_sensor_sensor_2', 'on') %}
+            mdi:garage-open
+          {% else %}
+            mdi:garage
+          {% endif %}
+
+      double_garage_door:
+        device_class: garage
+        friendly_name: "Double Garage Door"
+        value_template: >-
+          {% if is_state('binary_sensor.ecolink_door_window_sensor_sensor', 'on') %}
+            open
+          {% else %}
+            closed
+          {% endif %}
+        open_cover:
+          - service: script.double_garage_door
+        close_cover:
+          - condition: state
+            entity_id: binary_sensor.ecolink_door_window_sensor_sensor
+            state: 'on'
+          - service: script.double_garage_door
+        stop_cover:
+          service: script.double_garage_door
+        icon_template: >-
+          {% if is_state('binary_sensor.ecolink_door_window_sensor_sensor', 'on') %}
+            mdi:garage-open-variant
+          {% else %}
+            mdi:garage-variant
+          {% endif %}

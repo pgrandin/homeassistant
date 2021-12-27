@@ -2,29 +2,31 @@ version: '3'
 services:
   homeassistant:
     container_name: home-assistant
-    image: homeassistant/home-assistant:0.102.2
+    image: homeassistant/home-assistant:2021.11
     volumes:
-      - /home/pi/hass/config:/config
+      - /home/pi/homeassistant/config:/config
     environment:
       - TZ=America/Denver
     devices:
-      - /dev/ttyACM0:/dev/ttyACM0
+      - /dev/zwave:/dev/zwave
+      - /dev/zigbee:/dev/zigbee
     restart: always
     ports:
       - 8123:8123
     links:
-      - ser2sock:ser2sock
-  ser2sock:
-    image: tenstartups/ser2sock:armhf
-    ports:
-      - 10000:10000
-    devices:
-      - /dev/ttyUSB0
+      - zjs:zjs
+  zjs:
+    container_name: zjs
+    image: kpine/zwave-js-server:1.13.0-8.8.3
+    restart: unless-stopped
     environment:
-      - SERIAL_DEVICE=/dev/ttyUSB0
-      - BAUD_RATE=115200
-    privileged: true
-  mqtt:
-    image: eclipse-mosquitto:1.6.7
+      S2_ACCESS_CONTROL_KEY: ${S2_ACCESS_CONTROL_KEY}
+      S2_AUTHENTICATED_KEY: ${S2_AUTHENTICATED_KEY}
+      S2_UNAUTHENTICATED_KEY: ${S2_UNAUTHENTICATED_KEY}
+      S0_LEGACY_KEY: ${S0_LEGACY_KEY}
+    devices:
+      - '/dev/zwave:/dev/zwave'
+    volumes:
+      - ./cache:/cache
     ports:
-      - 1883:1883
+      - '3000:3000'      

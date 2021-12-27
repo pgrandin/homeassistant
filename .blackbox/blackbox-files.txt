@@ -1,3 +1,4 @@
 .env
 config/duckdns.yaml
+config/http.yaml
 config/secrets.yaml

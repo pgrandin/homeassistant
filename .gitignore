@@ -4,3 +4,4 @@ config/secrets.yaml
 /.blackbox/secring.gpg
 /config/duckdns.yaml
 /config/secrets.yaml
+/.env

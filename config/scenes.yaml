@@ -2,6 +2,6 @@
   entities:
     light.jasco_products_14299_in_wall_1000w_smart_dimmer_level_5: # Kitchen
       state: false
-    light.jasco_products_45606_2_way_dimmer_switch_level:   # Nook
+    light.2_way_dimmer_switch_level: # kittens
       state: true
-      brightness: 90
+      brightness: 70

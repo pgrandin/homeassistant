@@ -2,22 +2,21 @@ version: '3'
 services:
   homeassistant:
     container_name: home-assistant
-    image: homeassistant/home-assistant:2021.11
+    image: homeassistant/home-assistant:2023.11.1
     volumes:
       - /home/pi/homeassistant/config:/config
     environment:
       - TZ=America/Denver
     devices:
-      - /dev/zwave:/dev/zwave
-      - /dev/zigbee:/dev/zigbee
-    restart: always
+      - /dev/serial/by-id/usb-Silicon_Labs_HubZ_Smart_Home_Controller_91500078-if01-port0:/dev/zigbee
+    restart: unless-stopped
     ports:
       - 8123:8123
     links:
       - zjs:zjs
   zjs:
     container_name: zjs
-    image: kpine/zwave-js-server:1.13.0-8.8.3
+    image: kpine/zwave-js-server:1.33.0-12.3.0
     restart: unless-stopped
     environment:
       S2_ACCESS_CONTROL_KEY: ${S2_ACCESS_CONTROL_KEY}
@@ -25,7 +24,7 @@ services:
       S2_UNAUTHENTICATED_KEY: ${S2_UNAUTHENTICATED_KEY}
       S0_LEGACY_KEY: ${S0_LEGACY_KEY}
     devices:
-      - '/dev/zwave:/dev/zwave'
+      - /dev/serial/by-id/usb-Silicon_Labs_HubZ_Smart_Home_Controller_91500078-if00-port0:/dev/zwave
     volumes:
       - ./cache:/cache
     ports:

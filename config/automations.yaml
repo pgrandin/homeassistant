@@ -1,51 +1,51 @@
-- id: home_theater_lights_off
-  alias: Home theater light turn OFF
-  trigger:
-  - device_id: 7d53030f10654b99b37b7ebb1ec2e8f0
-    domain: zha
-    platform: device
-    subtype: remote_button_short_press
-    type: remote_button_short_press
-  condition:
-  - condition: device
-    device_id: 064b2228cf41464db56c2bcbec741f02
-    domain: light
-    entity_id: light.jasco_products_14299_in_wall_1000w_smart_dimmer_level_3
-    type: is_on
-  action:
-  - entity_id:
-    - light.jasco_products_14299_in_wall_1000w_smart_dimmer_level_3
-    - switch.basement_stairs_switch
-    service: light.turn_off
-  - device_id: 7db41220f7794b269be54b2054f76e36
-    domain: switch
-    entity_id: switch.basement_stairs_switch
-    type: turn_off
 - id: turn_lights_on_at_dusk
-  alias: Turn on lights at dusk
+  alias: Sunset
+  description: ''
   trigger:
-    platform: numeric_state
-    entity_id: sun.sun
-    value_template: '{{ state.attributes.elevation }}'
-    below: -1
+  - platform: sun
+    event: sunset
+    offset: -00:30:00
   action:
-    service: light.turn_on
-    entity_id:
-    - light.in_wall_1000w_incandescent_smart_dimmer
-    - light.jasco_products_45606_2_way_dimmer_switch_level
-    - light.jasco_products_14299_in_wall_1000w_smart_dimmer_level
+  - service: light.turn_on
+    data: {}
+    target:
+      entity_id:
+      - light.2_way_dimmer_switch
+      - light.in_wall_1000w_incandescent_smart_dimmer
+      - light.kitchen
+  - service: cover.set_cover_position
     data:
-      brightness: 255
+      position: 0
+    target:
+      device_id:
+      - 8c94e2ef8d558b3f458ade46079e2b6d
+      - 8e2d03126285962c5cf5f5e225fd1ed5
+    enabled: false
+  - service: cover.set_cover_position
+    data:
+      position: 16
+    target:
+      device_id: 25d16fcb4cc550571e280dbae4c88339
+    enabled: false
+  - service: switch.turn_on
+    data: {}
+    target:
+      device_id: 856f95f5fae4f0101558eefbdc0be8a9
 - id: turn_lights_off_at_2200
   alias: Turn off lights at 22:00
   trigger:
-    platform: time
+  - platform: time
     at: '22:00:00'
   action:
-    service: light.turn_off
-    entity_id:
-    - light.jasco_products_45606_2_way_dimmer_switch_level
-    - light.jasco_products_14299_in_wall_1000w_smart_dimmer_level
+  - type: turn_off
+    device_id: cf0dd4b30cf0fef6b4aa899339adb538
+    entity_id: light.2_way_dimmer_switch
+    domain: light
+  - service: cover.set_cover_position
+    data:
+      position: 0
+    target:
+      entity_id: cover.tv_area
 - id: lock_door_at_2200
   alias: Lock door at 22:00
   trigger:
@@ -64,130 +64,6 @@
   - entity_id:
     - light.in_wall_1000w_incandescent_smart_dimmer
     service: light.turn_off
-- id: notification_alarm_disarmed
-  alias: Alarm disarmed
-  trigger:
-    platform: state
-    entity_id: alarm_control_panel.alarm_panel
-    to: disarmed
-  action:
-  - service: notify.pushover_notifier
-    data:
-      message: Alarm disarmed
-- id: notification_alarm_armed_home
-  alias: Alarm armed home
-  trigger:
-    platform: state
-    entity_id: alarm_control_panel.alarm_panel
-    to: armed_home
-  action:
-  - service: notify.pushover_notifier
-    data:
-      message: Alarm armed HOME
-- id: notification_alarm_armed_away
-  alias: Alarm armed AWAY
-  trigger:
-    platform: state
-    entity_id: alarm_control_panel.alarm_panel
-    to: armed_away
-  action:
-    service: notify.pushover_notifier
-    data:
-      message: Alarm armed AWAY
-- id: notification_alarm_triggered
-  alias: Alarm TRIGGERED
-  trigger:
-    platform: state
-    entity_id: alarm_control_panel.alarm_panel
-    to: triggered
-  action:
-  - service: notify.pushover_notifier
-    data:
-      message: Alarm TRIGGERED
-  - service: light.turn_on
-    entity_id:
-    - light.jasco_products_14299_in_wall_1000w_smart_dimmer_level_4
-    - light.jasco_products_45606_2_way_dimmer_switch_level
-    - light.jasco_products_14299_in_wall_1000w_smart_dimmer_level
-- id: turn_on_downstairs_on_motion
-  alias: Turn on downstairs on motion
-  trigger:
-    platform: state
-    entity_id: binary_sensor.living_room_motion
-    to: 'on'
-  condition:
-    condition: and
-    conditions:
-    - condition: state
-      entity_id: light.jasco_products_14299_in_wall_1000w_smart_dimmer_level
-      state: 'off'
-    - condition: sun
-      after: sunset
-  action:
-  - service: light.turn_on
-    entity_id:
-    - light.jasco_products_45606_2_way_dimmer_switch_level
-    - light.jasco_products_14299_in_wall_1000w_smart_dimmer_level
-    data:
-      brightness: 127
-  - service: light.turn_on
-    data:
-      entity_id: light.bookshelf_left
-      rgb_color:
-      - 255
-      - 0
-      - 0
-      brightness: 200
-      transition: 2
-      effect: Solid
-  - service: timer.start
-    data:
-      entity_id: timer.downstairs_lights
-- id: turn_on_garage_for_5_min
-  alias: Turn on Garage lights for 5 mins
-  trigger:
-  - entity_id: binary_sensor.ecolink_door_window_sensor_sensor
-    platform: state
-    to: 'on'
-  - entity_id: binary_sensor.garage_door
-    platform: state
-    to: 'on'
-  condition:
-  - after: sunset
-    condition: sun
-  action:
-  - entity_id: switch.garage_lights
-    service: switch.turn_on
-  - data:
-      entity_id: timer.garage_lights
-    service: timer.start
-- id: turn_off_garage_lights_on_timer
-  alias: Turn off garage lights on timer
-  trigger:
-  - event_data:
-      entity_id: timer.garage_lights
-    event_type: timer.finished
-    platform: event
-  action:
-  - data:
-      entity_id:
-      - switch.zooz_zen26_s2_on_off_wall_switch_switch_2
-    entity_id: switch.garage_lights
-    service: switch.turn_off
-- id: turn_off_downstairs_on_timer
-  alias: Turn off downstairs on timer
-  trigger:
-    platform: event
-    event_type: timer.finished
-    event_data:
-      entity_id: timer.downstairs_lights
-  action:
-    service: light.turn_off
-    data:
-      entity_id:
-      - light.jasco_products_45606_2_way_dimmer_switch_level
-      - light.jasco_products_14299_in_wall_1000w_smart_dimmer_level
-      - light.bookshelf_left
 - id: bedtime
   alias: Bedtime
   trigger:
@@ -195,17 +71,32 @@
       actionName: Bedtime
     event_type: ios.action_fired
     platform: event
-  - device_id: 31f0e2ce39fbf8bafae12aa0a47fe958
-    domain: zha
-    platform: device
-    type: remote_button_long_press
-    subtype: remote_button_long_press
   action:
-  - entity_id:
-    - light.in_wall_1000w_incandescent_smart_dimmer_3
-    - light.2_way_dimmer_switch
-    - light.in_wall_1000w_incandescent_smart_dimmer_4
-    service: light.turn_off
+  - service: light.turn_off
+    data: {}
+    target:
+      entity_id:
+      - light.2_way_dimmer_switch
+      - light.deco
+      - light.kitchen
+      - light.master_bedroom
+      - light.mudroom
+      - light.wled_2
+  - service: switch.turn_off
+    data: {}
+    target:
+      entity_id:
+      - switch.z_wave_plus_s2_on_off_switch_2
+      - switch.z_wave_plus_s2_on_off_switch_3
+  - service: cover.set_cover_position
+    data:
+      position: 0
+    target:
+      entity_id: cover.bay_window
+  - service: switch.turn_off
+    data: {}
+    target:
+      entity_id: switch.christmas_tree_switch
   initial_state: true
 - id: notification_front_door_unlocked
   alias: Front door unlocked
@@ -213,33 +104,14 @@
   - platform: state
     to: unlocked
     entity_id: lock.touchscreen_deadbolt_z_wave_plus
-  action:
-  - service: notify.pushover_notifier
-    data:
-      message: Front door unlocked
+  action: []
 - id: notification_front_door_locked
   alias: Front door locked
   trigger:
   - platform: state
     to: locked
     entity_id: lock.touchscreen_deadbolt_z_wave_plus
-  action:
-  - service: notify.pushover_notifier
-    data:
-      message: Front door locked
-- id: toggle_master_bedroom_light
-  alias: Toggle master bedroom light
-  trigger:
-  - device_id: 1510fd60e9824f50aad4b0cbc15fc2f3
-    domain: zha
-    platform: device
-    subtype: remote_button_short_press
-    type: remote_button_short_press
-  condition: []
-  action:
-  - entity_id:
-    - light.jasco_products_14299_in_wall_1000w_smart_dimmer_level_6
-    service: light.toggle
+  action: []
 - id: alarm_quick_arm
   alias: Quick alarm arm
   trigger:
@@ -260,34 +132,20 @@
   - device_id: 31f0e2ce39fbf8bafae12aa0a47fe958
     domain: zha
     platform: device
-    type: remote_button_short_press
-    subtype: remote_button_short_press
+    type: remote_button_double_press
+    subtype: remote_button_double_press
   condition: []
   action:
-  - type: turn_on
-    device_id: ef309bc9bc895cef8d7578589feead1a
-    entity_id: switch.z_wave_plus_s2_on_off_switch_2
-    domain: switch
-- id: home_theater_lights_on
-  alias: Home theater light turn ON
-  trigger:
-  - device_id: 7d53030f10654b99b37b7ebb1ec2e8f0
-    domain: zha
-    platform: device
-    subtype: remote_button_short_press
-    type: remote_button_short_press
-  condition:
-  - condition: device
-    device_id: 064b2228cf41464db56c2bcbec741f02
-    domain: light
-    entity_id: light.jasco_products_14299_in_wall_1000w_smart_dimmer_level_3
-    type: is_off
-  action:
-  - brightness_pct: 20
-    device_id: 064b2228cf41464db56c2bcbec741f02
-    domain: light
-    entity_id: light.jasco_products_14299_in_wall_1000w_smart_dimmer_level_3
-    type: turn_on
+  - service: switch.turn_on
+    data: {}
+    target:
+      entity_id: switch.basement_stairs
+  - service: light.turn_on
+    data:
+      transition: 5
+      brightness_pct: 100
+    target:
+      entity_id: light.in_wall_1000w_incandescent_smart_dimmer_5
 - id: '1595543370498'
   alias: Double door Toggle
   description: ''
@@ -298,9 +156,10 @@
     platform: event
   condition: []
   action:
-  - data: {}
-    entity_id: switch.zooz_unknown_type_a000_id_a00a_switch
-    service: switch.toggle
+  - service: switch.toggle
+    data: {}
+    target:
+      entity_id: switch.double_garage_door
 - id: '1595627402225'
   alias: Single Door toggle
   description: ''
@@ -311,24 +170,10 @@
     platform: event
   condition: []
   action:
-  - data: {}
-    entity_id: switch.zooz_unknown_type_a000_id_a00a_switch_2
-    service: switch.toggle
-- id: '1609728555315'
-  alias: Switch Pierre's Office lights
-  description: ''
-  trigger:
-  - device_id: be1f8ee8f0a91c959971b8e21f16d063
-    domain: zha
-    platform: device
-    type: remote_button_short_press
-    subtype: remote_button_short_press
-  condition: []
-  action:
-  - type: toggle
-    device_id: 64caafb6cd9316d7fce7c377f9fbee3d
-    entity_id: light.wled
-    domain: light
+  - service: switch.toggle
+    data: {}
+    target:
+      entity_id: switch.single_garage_door
 - id: '1639629896297'
   alias: Living Room TV Time
   description: ''
@@ -344,6 +189,10 @@
     device_id: 7ccede0eb6b66c75d77dc182d0e848b4
     entity_id: light.in_wall_1000w_incandescent_smart_dimmer_2
     domain: light
+  - type: turn_off
+    device_id: 0aac16db9fa2041cac3cfbbcbdb82205
+    entity_id: switch.z_wave_plus_s2_on_off_switch_3
+    domain: switch
   - type: turn_on
     device_id: cf0dd4b30cf0fef6b4aa899339adb538
     entity_id: light.2_way_dimmer_switch
@@ -365,4 +214,309 @@
     entity_id: switch.z_wave_plus_s2_on_off_switch_2
     domain: light
     brightness_pct: 50
+  mode: single
+- id: '1643680657952'
+  alias: Living room fan lights on
+  description: ''
+  trigger:
+  - device_id: 4f14e55e1ec5d5b73e85b33b9660270d
+    domain: zha
+    platform: device
+    type: remote_button_double_press
+    subtype: remote_button_double_press
+  condition: []
+  action:
+  - type: turn_on
+    device_id: 0aac16db9fa2041cac3cfbbcbdb82205
+    entity_id: switch.z_wave_plus_s2_on_off_switch_3
+    domain: switch
+  mode: single
+- id: '1646944298379'
+  alias: Home Theater Lights off
+  description: ''
+  trigger:
+  - device_id: 31f0e2ce39fbf8bafae12aa0a47fe958
+    domain: zha
+    platform: device
+    type: remote_button_short_press
+    subtype: remote_button_short_press
+  condition: []
+  action:
+  - service: switch.turn_off
+    data: {}
+    target:
+      entity_id: switch.basement_stairs
+  - service: light.turn_off
+    data:
+      transition: 2
+    target:
+      entity_id: light.in_wall_1000w_incandescent_smart_dimmer_5
+  mode: single
+- id: '1646944375772'
+  alias: Home Theater Dim
+  description: ''
+  trigger:
+  - device_id: 31f0e2ce39fbf8bafae12aa0a47fe958
+    domain: zha
+    platform: device
+    type: remote_button_long_press
+    subtype: remote_button_long_press
+  condition: []
+  action:
+  - service: light.turn_on
+    data:
+      brightness_pct: 40
+      transition: 2
+    target:
+      entity_id: light.in_wall_1000w_incandescent_smart_dimmer_5
+  - service: switch.turn_off
+    data: {}
+    target:
+      entity_id: switch.basement_stairs
+  mode: single
+- id: '1670809105272'
+  alias: Kitchen Lights Mirror State
+  description: ''
+  trigger:
+  - platform: state
+    entity_id:
+    - light.kitchen
+  condition: []
+  action:
+  - choose:
+    - conditions:
+      - condition: state
+        entity_id: light.kitchen
+        state: 'off'
+      sequence:
+      - service: light.turn_off
+        data: {}
+        target:
+          entity_id: light.nano_dimmer
+    - conditions:
+      - condition: state
+        entity_id: light.kitchen
+        state: 'on'
+      sequence:
+      - service: light.turn_on
+        data:
+          brightness_pct: 100
+        target:
+          entity_id: light.nano_dimmer
+  mode: single
+- id: '1671052940118'
+  alias: Sunrise
+  description: ''
+  trigger:
+  - platform: sun
+    event: sunrise
+    offset: 0
+  condition: []
+  action:
+  - service: cover.set_cover_position
+    data:
+      position: 100
+    target:
+      entity_id: cover.bay_window
+  mode: single
+- id: '1671471776765'
+  alias: Toggle Zoey's office lights
+  description: ''
+  trigger:
+  - device_id: be1f8ee8f0a91c959971b8e21f16d063
+    domain: zha
+    platform: device
+    type: remote_button_short_press
+    subtype: remote_button_short_press
+  condition: []
+  action:
+  - service: light.toggle
+    data:
+      brightness_pct: 100
+      rgb_color:
+      - 255
+      - 255
+      - 255
+    target:
+      device_id: 364f7d1aaaf7fa9b77522724dc4021ae
+  mode: single
+- id: '1671477641173'
+  alias: Toggle Pierre's office lights on
+  description: ''
+  trigger:
+  - platform: device
+    type: turned_on
+    device_id: aecfe1bf49fe7c3da84f6c8c31b15f97
+    entity_id: switch.z_wave_plus_s2_on_off_switch
+    domain: switch
+  condition: []
+  action:
+  - service: light.turn_on
+    data:
+      brightness_pct: 100
+    target:
+      entity_id: light.wled
+  mode: single
+- id: '1671477723524'
+  alias: Turn off Pierre's office lights
+  description: ''
+  trigger:
+  - platform: device
+    type: turned_off
+    device_id: aecfe1bf49fe7c3da84f6c8c31b15f97
+    entity_id: switch.z_wave_plus_s2_on_off_switch
+    domain: switch
+  condition: []
+  action:
+  - service: light.turn_off
+    data: {}
+    target:
+      entity_id: light.wled
+  mode: single
+- id: '1672076573259'
+  alias: Turn on Zoey’s desk, pink
+  description: ''
+  trigger:
+  - device_id: be1f8ee8f0a91c959971b8e21f16d063
+    domain: zha
+    platform: device
+    type: remote_button_double_press
+    subtype: remote_button_double_press
+  condition: []
+  action:
+  - service: light.turn_on
+    data:
+      brightness_step_pct: 100
+      rgb_color:
+      - 193
+      - 84
+      - 193
+    target:
+      device_id: 364f7d1aaaf7fa9b77522724dc4021ae
+  mode: single
+- id: '1682947446870'
+  alias: Close TV area blinds around sunset
+  description: ''
+  trigger:
+  - platform: sun
+    event: sunset
+    offset: -00:20:00
+  condition: []
+  action:
+  - service: cover.close_cover
+    data: {}
+    target:
+      entity_id: cover.tv_area
+      area_id: reading_room
+  mode: single
+- id: '1682947531535'
+  alias: Open TV area blinds on sunset
+  description: ''
+  trigger:
+  - platform: sun
+    event: sunrise
+    offset: 0
+  condition: []
+  action:
+  - service: cover.open_cover
+    data: {}
+    target:
+      entity_id: cover.tv_area
+  mode: single
+- id: '1695301407278'
+  alias: Kitchen lights at sunrise
+  description: ''
+  trigger:
+  - platform: sun
+    event: sunrise
+    offset: 0
+  condition:
+  - condition: time
+    weekday:
+    - mon
+    - tue
+    - wed
+    - thu
+    - fri
+  action:
+  - service: light.turn_on
+    data: {}
+    target:
+      area_id: kitchen
+  mode: single
+- id: '1699248425400'
+  alias: Morning bedroom light
+  description: Turns on master bedroom light at 6:30 on weekdays
+  trigger:
+  - platform: time
+    at: 06:30:00
+  condition:
+  - condition: time
+    weekday:
+    - fri
+    - thu
+    - wed
+    - tue
+    - mon
+  action:
+  - service: light.turn_on
+    data:
+      transition: 60
+      brightness_pct: 100
+    target:
+      area_id: bedroom
+  mode: single
+- id: '1700264235971'
+  alias: Turn on Pierre's office at sunset
+  description: ''
+  trigger:
+  - platform: sun
+    event: sunset
+    offset: -00:30:00
+  condition:
+  - condition: time
+    weekday:
+    - mon
+    - tue
+    - wed
+    - thu
+    - fri
+  action:
+  - service: light.turn_on
+    data:
+      rgb_color:
+      - 255
+      - 255
+      - 255
+      brightness_pct: 100
+    target:
+      area_id: pierre_s_office
+  mode: single
+- id: '1700535569011'
+  alias: zoey's fairy lights
+  description: ''
+  trigger:
+  - device_id: 4f14e55e1ec5d5b73e85b33b9660270d
+    domain: zha
+    platform: device
+    type: remote_button_short_press
+    subtype: remote_button_short_press
+  condition: []
+  action:
+  - service: switch.toggle
+    data: {}
+    target:
+      device_id: ecffdf114d3f9aa27472551d04008a0e
+- id: elodie_office_light
+  alias: elodie's office light
+  trigger:
+  - event_data:
+      actionName: Office Light
+    event_type: ios.action_fired
+    platform: event
+  action:
+  - service: switch.toggle
+    data: {}
+    target:
+      area_id: elodie_s_office
   mode: single
